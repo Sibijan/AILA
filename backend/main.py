@@ -1,87 +1,107 @@
 from fastapi import FastAPI
+import mysql.connector
+import os
 
 app = FastAPI()
 
-# Temporary storage (instead of DB)
-tasks = []
+def get_db():
+    return mysql.connector.connect(
+        host=os.getenv("MYSQLHOST"),
+        user=os.getenv("MYSQLUSER"),
+        password=os.getenv("MYSQLPASSWORD"),
+        database=os.getenv("MYSQLDATABASE"),
+        port=int(os.getenv("MYSQLPORT", 3306))
+    )
 
+def init_db():
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS tasks (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255),
+            priority INT,
+            status VARCHAR(50) DEFAULT 'pending'
+        )
+    """)
+    db.commit()
+    cursor.close()
+    db.close()
+
+init_db()
 
 @app.get("/")
 def home():
     return {"status": "working"}
 
-
-# ADD TASK
 @app.post("/tasks")
 def add_task(task: dict):
-    task["id"] = len(tasks) + 1
-    task["status"] = "pending"
-    tasks.append(task)
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("INSERT INTO tasks (name, priority) VALUES (%s, %s)",
+                   (task["name"], task["priority"]))
+    db.commit()
+    cursor.close()
+    db.close()
     return {"message": "Task added"}
 
-
-# GET TASKS
 @app.get("/tasks")
 def get_tasks():
-    return sorted(tasks, key=lambda x: x["priority"], reverse=True)
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM tasks ORDER BY priority DESC")
+    tasks = cursor.fetchall()
+    cursor.close()
+    db.close()
+    return tasks
 
-
-# UPDATE TASK
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int):
-    for task in tasks:
-        if task["id"] == task_id:
-            task["status"] = "done"
-            return {"message": "Task marked as done"}
-    return {"message": "Task not found"}
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("UPDATE tasks SET status='done' WHERE id=%s", (task_id,))
+    db.commit()
+    cursor.close()
+    db.close()
+    return {"message": "Task marked as done"}
 
-
-# DELETE TASK
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
-    for task in tasks:
-        if task["id"] == task_id:
-            tasks.remove(task)
-            return {"message": "Task deleted"}
-    return {"message": "Task not found"}
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("DELETE FROM tasks WHERE id=%s", (task_id,))
+    db.commit()
+    cursor.close()
+    db.close()
+    return {"message": "Task deleted"}
 
-
-# PRODUCTIVITY
 @app.get("/productivity")
 def get_productivity():
-    total = len(tasks)
-    completed = sum(1 for task in tasks if task["status"] == "done")
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT COUNT(*) as total FROM tasks")
+    total = cursor.fetchone()["total"]
+    cursor.execute("SELECT COUNT(*) as completed FROM tasks WHERE status='done'")
+    completed = cursor.fetchone()["completed"]
+    cursor.close()
+    db.close()
     score = int((completed / total) * 100) if total > 0 else 0
+    return {"total_tasks": total, "completed_tasks": completed, "productivity": score}
 
-    return {
-        "total_tasks": total,
-        "completed_tasks": completed,
-        "productivity": score
-    }
-
-
-# PLAN
 @app.get("/plan")
 def plan_day():
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM tasks ORDER BY priority DESC")
+    tasks = cursor.fetchall()
+    cursor.close()
+    db.close()
     if not tasks:
         return {"message": "No tasks available"}
-
-    sorted_tasks = sorted(tasks, key=lambda x: x["priority"], reverse=True)
-
     plan = []
-    time = 9  # start at 9 AM
-
-    for task in sorted_tasks:
-        if time < 12:
-            formatted_time = f"{time}:00 AM"
-        else:
-            formatted_time = f"{time-12}:00 PM"
-
-        plan.append({
-            "task": task["name"],
-            "time": formatted_time
-        })
-
+    time = 9
+    for task in tasks:
+        formatted_time = f"{time}:00 AM" if time < 12 else f"{time-12}:00 PM"
+        plan.append({"task": task["name"], "time": formatted_time})
         time += 1
-
     return plan
