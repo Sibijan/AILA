@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() { _loading = true; _error = null; });
     try {
       final res = await http.get(Uri.parse('$baseUrl/productivity'))
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         setState(() { _stats = jsonDecode(res.body); _loading = false; });
       } else {

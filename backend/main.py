@@ -50,12 +50,8 @@ def delete_task(task_id: int):
 @app.get("/productivity")
 def get_productivity():
     total = len(tasks)
-
-    if total == 0:
-        return {"productivity": 0}
-
     completed = sum(1 for task in tasks if task["status"] == "done")
-    score = int((completed / total) * 100)
+    score = int((completed / total) * 100) if total > 0 else 0
 
     return {
         "total_tasks": total,
