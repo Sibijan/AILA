@@ -20,7 +20,8 @@ def init_db():
         CREATE TABLE IF NOT EXISTS tasks (
             id INT AUTO_INCREMENT PRIMARY KEY,
             name VARCHAR(255),
-            priority INT,
+            scheduled_date VARCHAR(20),
+            scheduled_time VARCHAR(10),
             status VARCHAR(50) DEFAULT 'pending'
         )
     """)
@@ -38,8 +39,10 @@ def home():
 def add_task(task: dict):
     db = get_db()
     cursor = db.cursor()
-    cursor.execute("INSERT INTO tasks (name, priority) VALUES (%s, %s)",
-                   (task["name"], task["priority"]))
+    cursor.execute(
+        "INSERT INTO tasks (name, scheduled_date, scheduled_time) VALUES (%s, %s, %s)",
+        (task["name"], task.get("scheduled_date", ""), task.get("scheduled_time", ""))
+    )
     db.commit()
     cursor.close()
     db.close()
@@ -49,7 +52,7 @@ def add_task(task: dict):
 def get_tasks():
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM tasks ORDER BY priority DESC")
+    cursor.execute("SELECT * FROM tasks ORDER BY scheduled_date ASC, scheduled_time ASC")
     tasks = cursor.fetchall()
     cursor.close()
     db.close()
@@ -92,16 +95,8 @@ def get_productivity():
 def plan_day():
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM tasks ORDER BY priority DESC")
+    cursor.execute("SELECT * FROM tasks ORDER BY scheduled_date ASC, scheduled_time ASC")
     tasks = cursor.fetchall()
     cursor.close()
     db.close()
-    if not tasks:
-        return {"message": "No tasks available"}
-    plan = []
-    time = 9
-    for task in tasks:
-        formatted_time = f"{time}:00 AM" if time < 12 else f"{time-12}:00 PM"
-        plan.append({"task": task["name"], "time": formatted_time})
-        time += 1
-    return plan
+    return tasks

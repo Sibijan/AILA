@@ -1,12 +1,10 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import '../constants.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
-
   @override
   State<TasksScreen> createState() => _TasksScreenState();
 }
@@ -26,7 +24,7 @@ class _TasksScreenState extends State<TasksScreen> {
     setState(() { _loading = true; _error = null; });
     try {
       final res = await http.get(Uri.parse('$baseUrl/tasks'))
-          .timeout(const Duration(seconds: 5));
+          .timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         setState(() { _tasks = jsonDecode(res.body); _loading = false; });
       } else {
@@ -46,16 +44,15 @@ class _TasksScreenState extends State<TasksScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF16162A),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text('Delete Task', style: GoogleFonts.syne(color: Colors.white)),
-        content: const Text('Are you sure you want to delete this task?',
-          style: TextStyle(color: Color(0xFF8888AA))),
+        backgroundColor: const Color(0xFF111111),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text('Delete Task', style: TextStyle(color: Colors.white)),
+        content: const Text('Are you sure?', style: TextStyle(color: Colors.white54)),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: Color(0xFF55557A)))),
+            child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
           TextButton(onPressed: () => Navigator.pop(ctx, true),
-            child: const Text('Delete', style: TextStyle(color: Color(0xFFF87171)))),
+            child: const Text('Delete', style: TextStyle(color: Colors.white))),
         ],
       ),
     );
@@ -71,11 +68,12 @@ class _TasksScreenState extends State<TasksScreen> {
     final done = _tasks.where((t) => t['status'] == 'done').toList();
 
     return Scaffold(
+      backgroundColor: Colors.black,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadTasks,
-          color: const Color(0xFF7C3AED),
-          backgroundColor: const Color(0xFF16162A),
+          color: Colors.white,
+          backgroundColor: Colors.black,
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -84,12 +82,12 @@ class _TasksScreenState extends State<TasksScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('My Tasks', style: GoogleFonts.syne(
-                        fontSize: 26, fontWeight: FontWeight.w800, color: Colors.white,
+                      const Text('My Tasks', style: TextStyle(
+                        fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white,
                       )),
                       IconButton(
                         onPressed: _loadTasks,
-                        icon: const Icon(Icons.refresh_rounded, color: Color(0xFF7C3AED)),
+                        icon: const Icon(Icons.refresh_rounded, color: Colors.white54),
                       ),
                     ],
                   ),
@@ -98,49 +96,41 @@ class _TasksScreenState extends State<TasksScreen> {
 
               if (_loading)
                 const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator(color: Color(0xFF7C3AED))),
+                  child: Center(child: CircularProgressIndicator(color: Colors.white)),
                 )
               else if (_error != null)
                 SliverFillRemaining(
-                  child: Center(child: Text(_error!, style: const TextStyle(color: Color(0xFFF87171)))),
+                  child: Center(child: Text(_error!, style: const TextStyle(color: Colors.white54))),
                 )
               else if (_tasks.isEmpty)
                 const SliverFillRemaining(
                   child: Center(child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('📋', style: TextStyle(fontSize: 48)),
+                      Icon(Icons.check_box_outline_blank, color: Colors.white24, size: 48),
                       SizedBox(height: 12),
-                      Text('No tasks yet', style: TextStyle(color: Color(0xFF55557A), fontSize: 16)),
+                      Text('No tasks yet', style: TextStyle(color: Colors.white54, fontSize: 16)),
                       SizedBox(height: 4),
                       Text('Tap Add to create your first task',
-                        style: TextStyle(color: Color(0xFF3D3D5E), fontSize: 13)),
+                        style: TextStyle(color: Colors.white24, fontSize: 13)),
                     ],
                   )),
                 )
               else ...[
-                // ── Pending ──
                 if (pending.isNotEmpty) ...[
                   SliverToBoxAdapter(child: _SectionLabel(label: 'Pending', count: pending.length)),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, i) => _TaskCard(task: pending[i], onDone: _markDone, onDelete: _deleteTask),
-                      childCount: pending.length,
-                    ),
-                  ),
+                  SliverList(delegate: SliverChildBuilderDelegate(
+                    (ctx, i) => _TaskCard(task: pending[i], onDone: _markDone, onDelete: _deleteTask),
+                    childCount: pending.length,
+                  )),
                 ],
-
-                // ── Done ──
                 if (done.isNotEmpty) ...[
                   SliverToBoxAdapter(child: _SectionLabel(label: 'Completed', count: done.length)),
-                  SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (ctx, i) => _TaskCard(task: done[i], onDone: _markDone, onDelete: _deleteTask),
-                      childCount: done.length,
-                    ),
-                  ),
+                  SliverList(delegate: SliverChildBuilderDelegate(
+                    (ctx, i) => _TaskCard(task: done[i], onDone: _markDone, onDelete: _deleteTask),
+                    childCount: done.length,
+                  )),
                 ],
-
                 const SliverToBoxAdapter(child: SizedBox(height: 32)),
               ],
             ],
@@ -161,20 +151,12 @@ class _SectionLabel extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
       child: Row(children: [
-        Text(label, style: GoogleFonts.syne(
-          fontSize: 14, fontWeight: FontWeight.w700, color: const Color(0xFFC4B5FD),
+        Text(label, style: const TextStyle(
+          fontSize: 13, fontWeight: FontWeight.w700, color: Colors.white54,
+          letterSpacing: 1,
         )),
         const SizedBox(width: 8),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-          decoration: BoxDecoration(
-            color: const Color(0xFF1E1E38),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text('$count', style: const TextStyle(
-            color: Color(0xFF7C3AED), fontSize: 11, fontWeight: FontWeight.w700,
-          )),
-        ),
+        Text('$count', style: const TextStyle(color: Colors.white24, fontSize: 13)),
       ]),
     );
   }
@@ -190,66 +172,54 @@ class _TaskCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDone = task['status'] == 'done';
-    final priority = task['priority'] as int;
-    final emoji = priorityEmojis[priority] ?? '⚪';
-    final label = priorityLabels[priority] ?? '$priority';
+    final date = task['scheduled_date'] ?? '';
+    final time = task['scheduled_time'] ?? '';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 5),
       child: Container(
         decoration: BoxDecoration(
-          color: const Color(0xFF16162A),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDone ? const Color(0xFF1E3A2A) : const Color(0xFF252540),
-          ),
+          color: const Color(0xFF0F0F0F),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.white12),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           leading: GestureDetector(
             onTap: isDone ? null : () => onDone(task['id']),
             child: Container(
-              width: 32, height: 32,
+              width: 28, height: 28,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: isDone ? const Color(0xFF1E3A2A) : const Color(0xFF1E1E38),
-                border: Border.all(
-                  color: isDone ? const Color(0xFF34D399) : const Color(0xFF3D3D5E),
-                  width: 2,
-                ),
+                border: Border.all(color: isDone ? Colors.white38 : Colors.white24, width: 1.5),
+                color: isDone ? Colors.white12 : Colors.transparent,
               ),
               child: isDone
-                  ? const Icon(Icons.check_rounded, color: Color(0xFF34D399), size: 16)
+                  ? const Icon(Icons.check, color: Colors.white54, size: 14)
                   : null,
             ),
           ),
           title: Text(
             task['name'],
             style: TextStyle(
-              color: isDone ? const Color(0xFF55557A) : Colors.white,
+              color: isDone ? Colors.white38 : Colors.white,
               fontWeight: FontWeight.w600,
               fontSize: 15,
               decoration: isDone ? TextDecoration.lineThrough : null,
-              decorationColor: const Color(0xFF55557A),
+              decorationColor: Colors.white38,
             ),
           ),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 6),
-            child: Row(children: [
-              Text('$emoji $label', style: const TextStyle(
-                color: Color(0xFF8888AA), fontSize: 12,
-              )),
-              const SizedBox(width: 8),
-              Container(width: 1, height: 12, color: const Color(0xFF2D2D4E)),
-              const SizedBox(width: 8),
-              Text('#${task['id']}', style: const TextStyle(
-                color: Color(0xFF3D3D5E), fontSize: 12,
-              )),
-            ]),
-          ),
+          subtitle: date.isNotEmpty || time.isNotEmpty
+              ? Padding(
+                  padding: const EdgeInsets.only(top: 6),
+                  child: Text('$date  $time'.trim(), style: const TextStyle(
+                    color: Colors.white38, fontSize: 12,
+                  )),
+                )
+              : null,
           trailing: IconButton(
             onPressed: () => onDelete(task['id']),
-            icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFF3D3D5E), size: 20),
+            icon: const Icon(Icons.close, color: Colors.white24, size: 18),
           ),
         ),
       ),
