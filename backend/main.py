@@ -1,17 +1,9 @@
 from fastapi import FastAPI
-import mysql.connector
-
-db = mysql.connector.connect(                   #connecting and saving in gb
-    host="localhost",
-    user="root",
-    password="root", 
-    database="ai_life"
-)
-
-cursor = db.cursor(dictionary=True)
 
 app = FastAPI()
 
+# Temporary storage (instead of DB)
+tasks = []
 
 
 @app.get("/")
@@ -22,47 +14,47 @@ def home():
 # ADD TASK
 @app.post("/tasks")
 def add_task(task: dict):
-    sql = "INSERT INTO tasks (name, priority) VALUES (%s, %s)"
-    values = (task["name"], task["priority"])
-    
-    cursor.execute(sql, values)
-    db.commit()
-
-    return {"message": "Task added to DB"}
+    task["id"] = len(tasks) + 1
+    task["status"] = "pending"
+    tasks.append(task)
+    return {"message": "Task added"}
 
 
 # GET TASKS
 @app.get("/tasks")
 def get_tasks():
-    cursor.execute("SELECT * FROM tasks ORDER BY priority DESC")
-    result = cursor.fetchall()
-    return result
+    return sorted(tasks, key=lambda x: x["priority"], reverse=True)
 
-#PUT TASKS
+
+# UPDATE TASK
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int):
-    cursor.execute(
-        "UPDATE tasks SET status='done' WHERE id=%s",
-        (task_id,)
-    )
-    db.commit()
+    for task in tasks:
+        if task["id"] == task_id:
+            task["status"] = "done"
+            return {"message": "Task marked as done"}
+    return {"message": "Task not found"}
 
-    if cursor.rowcount == 0:
-        return {"message": "Task not found"}
 
-    return {"message": "Task marked as done"}
+# DELETE TASK
+@app.delete("/tasks/{task_id}")
+def delete_task(task_id: int):
+    for task in tasks:
+        if task["id"] == task_id:
+            tasks.remove(task)
+            return {"message": "Task deleted"}
+    return {"message": "Task not found"}
 
+
+# PRODUCTIVITY
 @app.get("/productivity")
 def get_productivity():
-    cursor.execute("SELECT COUNT(*) as total FROM tasks")
-    total = cursor.fetchone()["total"]
+    total = len(tasks)
 
     if total == 0:
         return {"productivity": 0}
 
-    cursor.execute("SELECT COUNT(*) as completed FROM tasks WHERE status='done'")
-    completed = cursor.fetchone()["completed"]
-
+    completed = sum(1 for task in tasks if task["status"] == "done")
     score = int((completed / total) * 100)
 
     return {
@@ -71,31 +63,19 @@ def get_productivity():
         "productivity": score
     }
 
-#DELETE TASK
-@app.delete("/tasks/{task_id}")
-def delete_task(task_id: int):
-    sql = "DELETE FROM tasks WHERE id=%s"
-    cursor.execute(sql, (task_id,))
-    db.commit()
 
-    if cursor.rowcount == 0:
-        return {"message": "Task not found"}
-
-    return {"message": "Task deleted successfully"}
-
-#planner api
+# PLAN
 @app.get("/plan")
 def plan_day():
-    cursor.execute("SELECT * FROM tasks ORDER BY priority DESC")
-    tasks = cursor.fetchall()
-
     if not tasks:
         return {"message": "No tasks available"}
+
+    sorted_tasks = sorted(tasks, key=lambda x: x["priority"], reverse=True)
 
     plan = []
     time = 9  # start at 9 AM
 
-    for task in tasks:
+    for task in sorted_tasks:
         if time < 12:
             formatted_time = f"{time}:00 AM"
         else:
