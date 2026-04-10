@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 import mysql.connector
 import os
+import hashlib
 
 app = FastAPI()
 
@@ -17,12 +18,22 @@ def init_db():
     db = get_db()
     cursor = db.cursor()
     cursor.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255),
+            username VARCHAR(255) UNIQUE,
+            password VARCHAR(255)
+        )
+    """)
+    cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT,
             name VARCHAR(255),
             scheduled_date VARCHAR(20),
             scheduled_time VARCHAR(10),
-            status VARCHAR(50) DEFAULT 'pending'
+            status VARCHAR(50) DEFAULT 'pending',
+            FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
     db.commit()
@@ -31,32 +42,78 @@ def init_db():
 
 init_db()
 
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
+
+
 @app.get("/")
 def home():
     return {"status": "working"}
 
+
+# ── AUTH ──
+@app.post("/register")
+def register(data: dict):
+    db = get_db()
+    cursor = db.cursor()
+    try:
+        cursor.execute(
+            "INSERT INTO users (name, username, password) VALUES (%s, %s, %s)",
+            (data["name"], data["username"], hash_password(data["password"]))
+        )
+        db.commit()
+        return {"message": "Account created successfully"}
+    except mysql.connector.IntegrityError:
+        raise HTTPException(status_code=400, detail="Username already exists")
+    finally:
+        cursor.close()
+        db.close()
+
+
+@app.post("/login")
+def login(data: dict):
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute(
+        "SELECT * FROM users WHERE username=%s AND password=%s",
+        (data["username"], hash_password(data["password"]))
+    )
+    user = cursor.fetchone()
+    cursor.close()
+    db.close()
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    return {"id": user["id"], "name": user["name"], "username": user["username"]}
+
+
+# ── TASKS ──
 @app.post("/tasks")
 def add_task(task: dict):
     db = get_db()
     cursor = db.cursor()
     cursor.execute(
-        "INSERT INTO tasks (name, scheduled_date, scheduled_time) VALUES (%s, %s, %s)",
-        (task["name"], task.get("scheduled_date", ""), task.get("scheduled_time", ""))
+        "INSERT INTO tasks (user_id, name, scheduled_date, scheduled_time) VALUES (%s, %s, %s, %s)",
+        (task["user_id"], task["name"], task.get("scheduled_date", ""), task.get("scheduled_time", ""))
     )
     db.commit()
     cursor.close()
     db.close()
     return {"message": "Task added"}
 
-@app.get("/tasks")
-def get_tasks():
+
+@app.get("/tasks/{user_id}")
+def get_tasks(user_id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM tasks ORDER BY scheduled_date ASC, scheduled_time ASC")
+    cursor.execute(
+        "SELECT * FROM tasks WHERE user_id=%s ORDER BY scheduled_date ASC, scheduled_time ASC",
+        (user_id,)
+    )
     tasks = cursor.fetchall()
     cursor.close()
     db.close()
     return tasks
+
 
 @app.put("/tasks/{task_id}")
 def update_task(task_id: int):
@@ -68,6 +125,7 @@ def update_task(task_id: int):
     db.close()
     return {"message": "Task marked as done"}
 
+
 @app.delete("/tasks/{task_id}")
 def delete_task(task_id: int):
     db = get_db()
@@ -78,24 +136,29 @@ def delete_task(task_id: int):
     db.close()
     return {"message": "Task deleted"}
 
-@app.get("/productivity")
-def get_productivity():
+
+@app.get("/productivity/{user_id}")
+def get_productivity(user_id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT COUNT(*) as total FROM tasks")
+    cursor.execute("SELECT COUNT(*) as total FROM tasks WHERE user_id=%s", (user_id,))
     total = cursor.fetchone()["total"]
-    cursor.execute("SELECT COUNT(*) as completed FROM tasks WHERE status='done'")
+    cursor.execute("SELECT COUNT(*) as completed FROM tasks WHERE user_id=%s AND status='done'", (user_id,))
     completed = cursor.fetchone()["completed"]
     cursor.close()
     db.close()
     score = int((completed / total) * 100) if total > 0 else 0
     return {"total_tasks": total, "completed_tasks": completed, "productivity": score}
 
-@app.get("/plan")
-def plan_day():
+
+@app.get("/plan/{user_id}")
+def plan_day(user_id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM tasks ORDER BY scheduled_date ASC, scheduled_time ASC")
+    cursor.execute(
+        "SELECT * FROM tasks WHERE user_id=%s ORDER BY scheduled_date ASC, scheduled_time ASC",
+        (user_id,)
+    )
     tasks = cursor.fetchall()
     cursor.close()
     db.close()
