@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 import 'screens/tasks_screen.dart';
 import 'screens/add_task_screen.dart';
 import 'screens/plan_screen.dart';
+import 'services/session.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,19 +44,50 @@ class AILAApp extends StatelessWidget {
           elevation: 0,
         ),
       ),
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => const LoginScreen(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/home') {
-          final user = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (context) => RootNavigator(user: user),
-          );
-        }
-        return null;
-      },
+      home: const SplashScreen(),
+    );
+  }
+}
+
+class SplashScreen extends StatefulWidget {
+  const SplashScreen({super.key});
+  @override
+  State<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _checkSession();
+  }
+
+  Future<void> _checkSession() async {
+    final user = await Session.get();
+    if (!mounted) return;
+    if (user != null) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => RootNavigator(user: user)),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: Colors.black,
+      body: Center(
+        child: Text('AILA', style: TextStyle(
+          fontSize: 32, fontWeight: FontWeight.w900,
+          color: Colors.white, letterSpacing: 2,
+        )),
+      ),
     );
   }
 }

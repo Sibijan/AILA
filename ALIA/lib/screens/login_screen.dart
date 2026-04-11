@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../constants.dart';
+import '../main.dart';
 import 'register_screen.dart';
 import '../services/session.dart';
 
@@ -36,9 +37,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (res.statusCode == 200) {
         final user = jsonDecode(res.body);
-        await Session.save(user); 
+        await Session.save(user);
         if (mounted) {
-          Navigator.pushReplacementNamed(context, '/home', arguments: user);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => RootNavigator(user: user)),
+          );
         }
       } else {
         final error = jsonDecode(res.body);
@@ -86,7 +90,6 @@ class _LoginScreenState extends State<LoginScreen> {
               )),
               const SizedBox(height: 48),
 
-              // Username
               _Label('Username'),
               const SizedBox(height: 8),
               TextField(
@@ -96,7 +99,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 20),
 
-              // Password
               _Label('Password'),
               const SizedBox(height: 8),
               TextField(
@@ -113,7 +115,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 40),
 
-              // Login Button
               SizedBox(
                 width: double.infinity,
                 height: 52,
@@ -134,7 +135,6 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Register
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
