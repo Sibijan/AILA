@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 import '../constants.dart';
 
 class PlanScreen extends StatefulWidget {
-  const PlanScreen({super.key});
+  final Map<String, dynamic> user;
+  const PlanScreen({super.key, required this.user});
   @override
   State<PlanScreen> createState() => _PlanScreenState();
 }
@@ -23,7 +24,7 @@ class _PlanScreenState extends State<PlanScreen> {
   Future<void> _loadPlan() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final res = await http.get(Uri.parse('$baseUrl/plan'))
+      final res = await http.get(Uri.parse('$baseUrl/plan/${widget.user['id']}'))
           .timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
@@ -98,16 +99,19 @@ class _PlanScreenState extends State<PlanScreen> {
                 )
               else if (_error != null)
                 SliverFillRemaining(
-                  child: Center(child: Text(_error!, style: const TextStyle(color: Colors.white54))),
+                  child: Center(child: Text(_error!,
+                    style: const TextStyle(color: Colors.white54))),
                 )
               else if (_tasks.isEmpty)
                 const SliverFillRemaining(
                   child: Center(child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.calendar_today_outlined, color: Colors.white24, size: 48),
+                      Icon(Icons.calendar_today_outlined,
+                        color: Colors.white24, size: 48),
                       SizedBox(height: 12),
-                      Text('No scheduled tasks', style: TextStyle(color: Colors.white54, fontSize: 16)),
+                      Text('No scheduled tasks',
+                        style: TextStyle(color: Colors.white54, fontSize: 16)),
                       SizedBox(height: 4),
                       Text('Add tasks with a date and time',
                         style: TextStyle(color: Colors.white24, fontSize: 13)),

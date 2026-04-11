@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:percent_indicator/percent_indicator.dart';
 import '../constants.dart';
+import '../services/session.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final Map<String, dynamic> user;
+  const HomeScreen({super.key, required this.user});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -24,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _loadStats() async {
     setState(() { _loading = true; _error = null; });
     try {
-      final res = await http.get(Uri.parse('$baseUrl/productivity'))
+      final res = await http.get(Uri.parse('$baseUrl/productivity/${widget.user['id']}'))
           .timeout(const Duration(seconds: 15));
       if (res.statusCode == 200) {
         setState(() { _stats = jsonDecode(res.body); _loading = false; });
@@ -35,6 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() { _error = 'Cannot reach backend.'; _loading = false; });
     }
   }
+
+  void _logout() async {
+  await Session.clear();
+  if (mounted) {
+    Navigator.pushReplacementNamed(context, '/login');
+  }
+}
 
   @override
   Widget build(BuildContext context) {
@@ -71,13 +80,21 @@ class _HomeScreenState extends State<HomeScreen> {
                         )),
                       ],
                     ),
-                    Container(
-                      width: 44, height: 44,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.white24),
-                        borderRadius: BorderRadius.circular(12),
+                    GestureDetector(
+                      onTap: _logout,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.white12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(children: [
+                          Text(widget.user['name'].toString().split(' ')[0],
+                            style: const TextStyle(color: Colors.white, fontSize: 13)),
+                          const SizedBox(width: 6),
+                          const Icon(Icons.logout, color: Colors.white38, size: 14),
+                        ]),
                       ),
-                      child: const Icon(Icons.person_outline, color: Colors.white, size: 22),
                     ),
                   ],
                 ),
@@ -142,10 +159,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       border: Border.all(color: Colors.white12),
                       borderRadius: BorderRadius.circular(16),
                     ),
-                    child: Row(children: [
-                      const Icon(Icons.lightbulb_outline, color: Colors.white54, size: 24),
-                      const SizedBox(width: 14),
-                      const Expanded(child: Text(
+                    child: const Row(children: [
+                      Icon(Icons.lightbulb_outline, color: Colors.white54, size: 24),
+                      SizedBox(width: 14),
+                      Expanded(child: Text(
                         'Add tasks with a date and time to schedule your day automatically.',
                         style: TextStyle(color: Colors.white54, fontSize: 13, height: 1.5),
                       )),

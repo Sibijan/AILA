@@ -4,7 +4,8 @@ import 'package:http/http.dart' as http;
 import '../constants.dart';
 
 class AddTaskScreen extends StatefulWidget {
-  const AddTaskScreen({super.key});
+  final Map<String, dynamic> user;
+  const AddTaskScreen({super.key, required this.user});
   @override
   State<AddTaskScreen> createState() => _AddTaskScreenState();
 }
@@ -57,36 +58,28 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   Future<void> _addTask() async {
     final name = _nameController.text.trim();
-    if (name.isEmpty) {
-      _showSnack('Please enter a task name');
-      return;
-    }
-    if (_selectedDate == null) {
-      _showSnack('Please select a date');
-      return;
-    }
-    if (_selectedTime == null) {
-      _showSnack('Please select a time');
-      return;
-    }
+    if (name.isEmpty) { _showSnack('Please enter a task name'); return; }
+    if (_selectedDate == null) { _showSnack('Please select a date'); return; }
+    if (_selectedTime == null) { _showSnack('Please select a time'); return; }
 
     setState(() => _loading = true);
 
-    final dateStr = '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2,'0')}-${_selectedDate!.day.toString().padLeft(2,'0')}';
-    final hour = _selectedTime!.hour.toString().padLeft(2, '0');
-    final minute = _selectedTime!.minute.toString().padLeft(2, '0');
-    final timeStr = '$hour:$minute';
+    final dateStr =
+        '${_selectedDate!.year}-${_selectedDate!.month.toString().padLeft(2, '0')}-${_selectedDate!.day.toString().padLeft(2, '0')}';
+    final timeStr =
+        '${_selectedTime!.hour.toString().padLeft(2, '0')}:${_selectedTime!.minute.toString().padLeft(2, '0')}';
 
     try {
       final res = await http.post(
         Uri.parse('$baseUrl/tasks'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
+          'user_id': widget.user['id'],
           'name': name,
           'scheduled_date': dateStr,
           'scheduled_time': timeStr,
         }),
-      ).timeout(const Duration(seconds: 10));
+      ).timeout(const Duration(seconds: 15));
 
       if (res.statusCode == 200) {
         _nameController.clear();
@@ -133,7 +126,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               )),
               const SizedBox(height: 36),
 
-              // Task Name
               _Label('Task Name'),
               const SizedBox(height: 8),
               TextField(
@@ -161,7 +153,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               ),
               const SizedBox(height: 24),
 
-              // Date
               _Label('Date'),
               const SizedBox(height: 8),
               _PickerButton(
@@ -174,7 +165,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               ),
               const SizedBox(height: 16),
 
-              // Time
               _Label('Time'),
               const SizedBox(height: 8),
               _PickerButton(
@@ -203,8 +193,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                       ? const SizedBox(width: 20, height: 20,
                           child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
                       : const Text('Add Task', style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.w800,
-                        )),
+                          fontSize: 16, fontWeight: FontWeight.w800)),
                 ),
               ),
             ],
@@ -253,8 +242,7 @@ class _PickerButton extends StatelessWidget {
           Icon(icon, color: hasValue ? Colors.white : Colors.white38, size: 20),
           const SizedBox(width: 12),
           Text(label, style: TextStyle(
-            color: hasValue ? Colors.white : Colors.white38,
-            fontSize: 15,
+            color: hasValue ? Colors.white : Colors.white38, fontSize: 15,
           )),
         ]),
       ),

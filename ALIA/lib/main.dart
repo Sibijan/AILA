@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/tasks_screen.dart';
 import 'screens/add_task_screen.dart';
@@ -27,71 +28,41 @@ class AILAApp extends StatelessWidget {
         brightness: Brightness.dark,
         scaffoldBackgroundColor: Colors.black,
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF7C3AED),
-          secondary: Color(0xFF60A5FA),
-          surface: Color(0xFF16162A),
-          error: Color(0xFFF87171),
+          primary: Colors.white,
+          secondary: Colors.white70,
+          surface: Color(0xFF111111),
         ),
         textTheme: GoogleFonts.dmSansTextTheme(
           ThemeData.dark().textTheme,
-        ).copyWith(
-          displayLarge: GoogleFonts.syne(
-            fontSize: 28,
-            fontWeight: FontWeight.w800,
-            color: Colors.white,
-          ),
-          titleLarge: GoogleFonts.syne(
-            fontSize: 20,
-            fontWeight: FontWeight.w700,
-            color: Colors.white,
-          ),
-          titleMedium: GoogleFonts.syne(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-            color: const Color(0xFFC4B5FD),
-          ),
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF16162A),
-          selectedItemColor: Color(0xFF7C3AED),
-          unselectedItemColor: Color(0xFF55557A),
+          backgroundColor: Colors.black,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white24,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
         ),
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: const Color(0xFF16162A),
-          labelStyle: const TextStyle(color: Color(0xFF8888AA)),
-          hintStyle: const TextStyle(color: Color(0xFF55557A)),
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF2D2D4E)),
-          ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF2D2D4E)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(14),
-            borderSide: const BorderSide(color: Color(0xFF7C3AED), width: 2),
-          ),
-        ),
-        cardTheme: CardThemeData(
-          color: const Color(0xFF16162A),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-            side: const BorderSide(color: Color(0xFF252540)),
-          ),
-          elevation: 0,
-        ),
       ),
-      home: const RootNavigator(),
+      initialRoute: '/login',
+      routes: {
+        '/login': (context) => const LoginScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/home') {
+          final user = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (context) => RootNavigator(user: user),
+          );
+        }
+        return null;
+      },
     );
   }
 }
 
 class RootNavigator extends StatefulWidget {
-  const RootNavigator({super.key});
+  final Map<String, dynamic> user;
+  const RootNavigator({super.key, required this.user});
 
   @override
   State<RootNavigator> createState() => _RootNavigatorState();
@@ -100,24 +71,24 @@ class RootNavigator extends StatefulWidget {
 class _RootNavigatorState extends State<RootNavigator> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = const [
-    HomeScreen(),
-    TasksScreen(),
-    AddTaskScreen(),
-    PlanScreen(),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final screens = [
+      HomeScreen(user: widget.user),
+      TasksScreen(user: widget.user),
+      AddTaskScreen(user: widget.user),
+      PlanScreen(user: widget.user),
+    ];
+
     return Scaffold(
       body: IndexedStack(
         index: _currentIndex,
-        children: _screens,
+        children: screens,
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(
-            top: BorderSide(color: Color(0xFF1E1E38), width: 1),
+            top: BorderSide(color: Colors.white10, width: 1),
           ),
         ),
         child: BottomNavigationBar(
