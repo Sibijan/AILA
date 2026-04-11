@@ -23,12 +23,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       firstDate: DateTime.now(),
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (context, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.white,
-            onPrimary: Colors.black,
-            surface: Color(0xFF1A1A1A),
-            onSurface: Colors.white,
+        data: ThemeData.light().copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Colors.black,
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            onSurface: Colors.black,
           ),
         ),
         child: child!,
@@ -42,12 +42,12 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       context: context,
       initialTime: TimeOfDay.now(),
       builder: (context, child) => Theme(
-        data: ThemeData.dark().copyWith(
-          colorScheme: const ColorScheme.dark(
-            primary: Colors.white,
-            onPrimary: Colors.black,
-            surface: Color(0xFF1A1A1A),
-            onSurface: Colors.white,
+        data: ThemeData.light().copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: Colors.black,
+            onPrimary: Colors.white,
+            surface: Colors.white,
+            onSurface: Colors.black,
           ),
         ),
         child: child!,
@@ -94,8 +94,8 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: const Color(0xFF1A1A1A),
+      content: Text(msg, style: const TextStyle(color: Colors.white)),
+      backgroundColor: Colors.black,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ));
@@ -110,7 +110,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -118,11 +118,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text('Add Task', style: TextStyle(
-                fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white,
+                fontSize: 28, fontWeight: FontWeight.w900, color: Colors.black,
               )),
               const SizedBox(height: 4),
               Text('What do you need to get done?', style: TextStyle(
-                color: Colors.white.withOpacity(0.4), fontSize: 14,
+                color: Colors.black.withOpacity(0.4), fontSize: 14,
               )),
               const SizedBox(height: 36),
 
@@ -130,23 +130,23 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
               const SizedBox(height: 8),
               TextField(
                 controller: _nameController,
-                style: const TextStyle(color: Colors.white, fontSize: 15),
+                style: const TextStyle(color: Colors.black, fontSize: 15),
                 decoration: InputDecoration(
                   hintText: 'e.g. Study Flutter, Go for a run…',
-                  hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
+                  hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
                   filled: true,
-                  fillColor: const Color(0xFF111111),
+                  fillColor: const Color(0xFFF5F5F5),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Colors.white12),
+                    borderSide: const BorderSide(color: Colors.black12),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Colors.white12),
+                    borderSide: const BorderSide(color: Colors.black12),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: Colors.white38),
+                    borderSide: const BorderSide(color: Colors.black38),
                   ),
                 ),
                 textCapitalization: TextCapitalization.sentences,
@@ -183,15 +183,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 child: ElevatedButton(
                   onPressed: _loading ? null : _addTask,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
-                    disabledBackgroundColor: Colors.white24,
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+                    disabledBackgroundColor: Colors.black26,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
                   ),
                   child: _loading
                       ? const SizedBox(width: 20, height: 20,
-                          child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                       : const Text('Add Task', style: TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w800)),
                 ),
@@ -210,7 +210,7 @@ class _Label extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(text, style: TextStyle(
-      color: Colors.white.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w600,
+      color: Colors.black.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w600,
     ));
   }
 }
@@ -234,15 +234,15 @@ class _PickerButton extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: const Color(0xFF111111),
+          color: const Color(0xFFF5F5F5),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: hasValue ? Colors.white38 : Colors.white12),
+          border: Border.all(color: hasValue ? Colors.black38 : Colors.black12),
         ),
         child: Row(children: [
-          Icon(icon, color: hasValue ? Colors.white : Colors.white38, size: 20),
+          Icon(icon, color: hasValue ? Colors.black : Colors.black38, size: 20),
           const SizedBox(width: 12),
           Text(label, style: TextStyle(
-            color: hasValue ? Colors.white : Colors.white38, fontSize: 15,
+            color: hasValue ? Colors.black : Colors.black38, fontSize: 15,
           )),
         ]),
       ),

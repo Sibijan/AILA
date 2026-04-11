@@ -67,12 +67,12 @@ class _PlanScreenState extends State<PlanScreen> {
     final dates = grouped.keys.toList()..sort();
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadPlan,
-          color: Colors.white,
-          backgroundColor: Colors.black,
+          color: Colors.black,
+          backgroundColor: Colors.white,
           child: CustomScrollView(
             slivers: [
               SliverToBoxAdapter(
@@ -82,11 +82,11 @@ class _PlanScreenState extends State<PlanScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text('Plan', style: TextStyle(
-                        fontSize: 28, fontWeight: FontWeight.w900, color: Colors.white,
+                        fontSize: 28, fontWeight: FontWeight.w900, color: Colors.black,
                       )),
                       const SizedBox(height: 4),
                       Text('Your scheduled tasks', style: TextStyle(
-                        color: Colors.white.withOpacity(0.4), fontSize: 14,
+                        color: Colors.black.withOpacity(0.4), fontSize: 14,
                       )),
                     ],
                   ),
@@ -95,12 +95,12 @@ class _PlanScreenState extends State<PlanScreen> {
 
               if (_loading)
                 const SliverFillRemaining(
-                  child: Center(child: CircularProgressIndicator(color: Colors.white)),
+                  child: Center(child: CircularProgressIndicator(color: Colors.black)),
                 )
               else if (_error != null)
                 SliverFillRemaining(
                   child: Center(child: Text(_error!,
-                    style: const TextStyle(color: Colors.white54))),
+                    style: const TextStyle(color: Colors.black54))),
                 )
               else if (_tasks.isEmpty)
                 const SliverFillRemaining(
@@ -108,13 +108,13 @@ class _PlanScreenState extends State<PlanScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.calendar_today_outlined,
-                        color: Colors.white24, size: 48),
+                        color: Colors.black26, size: 48),
                       SizedBox(height: 12),
                       Text('No scheduled tasks',
-                        style: TextStyle(color: Colors.white54, fontSize: 16)),
+                        style: TextStyle(color: Colors.black54, fontSize: 16)),
                       SizedBox(height: 4),
                       Text('Add tasks with a date and time',
-                        style: TextStyle(color: Colors.white24, fontSize: 13)),
+                        style: TextStyle(color: Colors.black26, fontSize: 13)),
                     ],
                   )),
                 )
@@ -130,7 +130,7 @@ class _PlanScreenState extends State<PlanScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(_formatDate(date), style: const TextStyle(
-                              color: Colors.white, fontSize: 15,
+                              color: Colors.black, fontSize: 15,
                               fontWeight: FontWeight.w700,
                             )),
                             const SizedBox(height: 12),
@@ -165,32 +165,32 @@ class _PlanTaskCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 10),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0F0F0F),
+        color: const Color(0xFFF8F8F8),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: Colors.black12),
       ),
       child: Row(children: [
         if (time.isNotEmpty) ...[
           Text(time, style: const TextStyle(
-            color: Colors.white54, fontSize: 13, fontWeight: FontWeight.w600,
+            color: Colors.black54, fontSize: 13, fontWeight: FontWeight.w600,
           )),
           const SizedBox(width: 16),
-          Container(width: 1, height: 36, color: Colors.white12),
+          Container(width: 1, height: 36, color: Colors.black12),
           const SizedBox(width: 16),
         ],
         Expanded(
           child: Text(
             task['name'],
             style: TextStyle(
-              color: isDone ? Colors.white38 : Colors.white,
+              color: isDone ? Colors.black38 : Colors.black,
               fontSize: 15, fontWeight: FontWeight.w500,
               decoration: isDone ? TextDecoration.lineThrough : null,
-              decorationColor: Colors.white38,
+              decorationColor: Colors.black38,
             ),
           ),
         ),
         if (isDone)
-          const Icon(Icons.check, color: Colors.white24, size: 16),
+          const Icon(Icons.check, color: Colors.black26, size: 16),
       ]),
     );
   }

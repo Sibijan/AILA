@@ -12,7 +12,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
-    statusBarIconBrightness: Brightness.light,
+    statusBarIconBrightness: Brightness.dark,
   ));
   runApp(const AILAApp());
 }
@@ -26,20 +26,20 @@ class AILAApp extends StatelessWidget {
       title: 'AILA',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: Colors.black,
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.white,
-          secondary: Colors.white70,
-          surface: Color(0xFF111111),
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: Colors.white,
+        colorScheme: const ColorScheme.light(
+          primary: Colors.black,
+          secondary: Colors.black54,
+          surface: Color(0xFFF5F5F5),
         ),
         textTheme: GoogleFonts.dmSansTextTheme(
-          ThemeData.dark().textTheme,
+          ThemeData.light().textTheme,
         ),
         bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Colors.black,
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.white24,
+          backgroundColor: Colors.white,
+          selectedItemColor: Colors.black,
+          unselectedItemColor: Colors.black26,
           type: BottomNavigationBarType.fixed,
           elevation: 0,
         ),
@@ -81,11 +81,11 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: Center(
         child: Text('AILA', style: TextStyle(
           fontSize: 32, fontWeight: FontWeight.w900,
-          color: Colors.white, letterSpacing: 2,
+          color: Colors.black, letterSpacing: 2,
         )),
       ),
     );
@@ -120,7 +120,7 @@ class _RootNavigatorState extends State<RootNavigator> {
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(
           border: Border(
-            top: BorderSide(color: Colors.white10, width: 1),
+            top: BorderSide(color: Colors.black12, width: 1),
           ),
         ),
         child: BottomNavigationBar(

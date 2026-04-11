@@ -39,11 +39,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _logout() async {
-  await Session.clear();
-  if (mounted) {
-    Navigator.pushReplacementNamed(context, '/login');
+    await Session.clear();
+    if (mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const _LoginRedirect()),
+      );
+    }
   }
-}
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +56,12 @@ class _HomeScreenState extends State<HomeScreen> {
     final dateStr = '${days[now.weekday - 1]}, ${months[now.month - 1]} ${now.day}';
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _loadStats,
-          color: Colors.white,
-          backgroundColor: Colors.black,
+          color: Colors.black,
+          backgroundColor: Colors.white,
           child: SingleChildScrollView(
             physics: const AlwaysScrollableScrollPhysics(),
             padding: const EdgeInsets.all(24),
@@ -73,10 +76,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         const Text('AILA', style: TextStyle(
                           fontSize: 32, fontWeight: FontWeight.w900,
-                          color: Colors.white, letterSpacing: 2,
+                          color: Colors.black, letterSpacing: 2,
                         )),
                         Text(dateStr, style: TextStyle(
-                          color: Colors.white.withOpacity(0.4), fontSize: 13,
+                          color: Colors.black.withOpacity(0.4), fontSize: 13,
                         )),
                       ],
                     ),
@@ -85,14 +88,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         decoration: BoxDecoration(
-                          border: Border.all(color: Colors.white12),
+                          border: Border.all(color: Colors.black12),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(children: [
                           Text(widget.user['name'].toString().split(' ')[0],
-                            style: const TextStyle(color: Colors.white, fontSize: 13)),
+                            style: const TextStyle(color: Colors.black, fontSize: 13)),
                           const SizedBox(width: 6),
-                          const Icon(Icons.logout, color: Colors.white38, size: 14),
+                          const Icon(Icons.logout, color: Colors.black38, size: 14),
                         ]),
                       ),
                     ),
@@ -101,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 40),
 
                 if (_loading)
-                  const Center(child: CircularProgressIndicator(color: Colors.white))
+                  const Center(child: CircularProgressIndicator(color: Colors.black))
                 else if (_error != null)
                   _ErrorCard(message: _error!, onRetry: _loadStats)
                 else ...[
@@ -117,15 +120,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Text('${_stats!['productivity']}%',
                                 style: const TextStyle(
-                                  fontSize: 30, fontWeight: FontWeight.w900, color: Colors.white,
+                                  fontSize: 30, fontWeight: FontWeight.w900, color: Colors.black,
                                 )),
                               Text('productivity', style: TextStyle(
-                                color: Colors.white.withOpacity(0.4), fontSize: 11,
+                                color: Colors.black.withOpacity(0.4), fontSize: 11,
                               )),
                             ],
                           ),
-                          progressColor: Colors.white,
-                          backgroundColor: Colors.white12,
+                          progressColor: Colors.black,
+                          backgroundColor: Colors.black12,
                           circularStrokeCap: CircularStrokeCap.round,
                           animation: true,
                           animationDuration: 800,
@@ -133,7 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 12),
                         Text(_scoreLabel(_stats!['productivity']),
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.6),
+                            color: Colors.black.withOpacity(0.6),
                             fontSize: 14, fontWeight: FontWeight.w500,
                           )),
                       ],
@@ -156,15 +159,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.white12),
+                      border: Border.all(color: Colors.black12),
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: const Row(children: [
-                      Icon(Icons.lightbulb_outline, color: Colors.white54, size: 24),
+                      Icon(Icons.lightbulb_outline, color: Colors.black54, size: 24),
                       SizedBox(width: 14),
                       Expanded(child: Text(
                         'Add tasks with a date and time to schedule your day automatically.',
-                        style: TextStyle(color: Colors.white54, fontSize: 13, height: 1.5),
+                        style: TextStyle(color: Colors.black54, fontSize: 13, height: 1.5),
                       )),
                     ]),
                   ),
@@ -184,6 +187,41 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class _LoginRedirect extends StatefulWidget {
+  const _LoginRedirect();
+  @override
+  State<_LoginRedirect> createState() => _LoginRedirectState();
+}
+
+class _LoginRedirectState extends State<_LoginRedirect> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const _LoginScreenImport()),
+      );
+    });
+  }
+  @override
+  Widget build(BuildContext context) => const Scaffold(backgroundColor: Colors.white);
+}
+
+class _LoginScreenImport extends StatelessWidget {
+  const _LoginScreenImport();
+  @override
+  Widget build(BuildContext context) {
+    return const _LoginPlaceholder();
+  }
+}
+
+class _LoginPlaceholder extends StatelessWidget {
+  const _LoginPlaceholder();
+  @override
+  Widget build(BuildContext context) => const Scaffold(backgroundColor: Colors.white);
+}
+
 class _StatCard extends StatelessWidget {
   final String label, value;
   const _StatCard({required this.label, required this.value});
@@ -194,15 +232,15 @@ class _StatCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 12),
         decoration: BoxDecoration(
-          border: Border.all(color: Colors.white12),
+          border: Border.all(color: Colors.black12),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(children: [
           Text(value, style: const TextStyle(
-            fontSize: 24, fontWeight: FontWeight.w900, color: Colors.white,
+            fontSize: 24, fontWeight: FontWeight.w900, color: Colors.black,
           )),
           const SizedBox(height: 4),
-          Text(label, style: TextStyle(color: Colors.white.withOpacity(0.4), fontSize: 12)),
+          Text(label, style: TextStyle(color: Colors.black.withOpacity(0.4), fontSize: 12)),
         ]),
       ),
     );
@@ -219,20 +257,20 @@ class _ErrorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.white12),
+        border: Border.all(color: Colors.black12),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Column(children: [
-        const Icon(Icons.wifi_off, color: Colors.white54, size: 36),
+        const Icon(Icons.wifi_off, color: Colors.black54, size: 36),
         const SizedBox(height: 12),
         Text(message, textAlign: TextAlign.center,
-          style: const TextStyle(color: Colors.white54, height: 1.5)),
+          style: const TextStyle(color: Colors.black54, height: 1.5)),
         const SizedBox(height: 16),
         OutlinedButton(
           onPressed: onRetry,
           style: OutlinedButton.styleFrom(
-            side: const BorderSide(color: Colors.white24),
-            foregroundColor: Colors.white,
+            side: const BorderSide(color: Colors.black),
+            foregroundColor: Colors.black,
           ),
           child: const Text('Retry'),
         ),

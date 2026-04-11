@@ -56,8 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-      content: Text(msg),
-      backgroundColor: const Color(0xFF1A1A1A),
+      content: Text(msg, style: const TextStyle(color: Colors.white)),
+      backgroundColor: Colors.black,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     ));
@@ -73,7 +73,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -82,11 +82,11 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const SizedBox(height: 60),
               const Text('Welcome back', style: TextStyle(
-                fontSize: 32, fontWeight: FontWeight.w900, color: Colors.white,
+                fontSize: 32, fontWeight: FontWeight.w900, color: Colors.black,
               )),
               const SizedBox(height: 8),
               Text('Sign in to continue', style: TextStyle(
-                color: Colors.white.withOpacity(0.4), fontSize: 16,
+                color: Colors.black.withOpacity(0.4), fontSize: 16,
               )),
               const SizedBox(height: 48),
 
@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
               const SizedBox(height: 8),
               TextField(
                 controller: _usernameController,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.black),
                 decoration: _inputDecoration('Enter your username', Icons.person_outline),
               ),
               const SizedBox(height: 20),
@@ -104,11 +104,11 @@ class _LoginScreenState extends State<LoginScreen> {
               TextField(
                 controller: _passwordController,
                 obscureText: _obscure,
-                style: const TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.black),
                 decoration: _inputDecoration('Enter your password', Icons.lock_outline).copyWith(
                   suffixIcon: IconButton(
                     icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                      color: Colors.white38, size: 20),
+                      color: Colors.black38, size: 20),
                     onPressed: () => setState(() => _obscure = !_obscure),
                   ),
                 ),
@@ -121,14 +121,14 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: ElevatedButton(
                   onPressed: _loading ? null : _login,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                    foregroundColor: Colors.black,
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                     elevation: 0,
                   ),
                   child: _loading
                       ? const SizedBox(width: 20, height: 20,
-                          child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2))
+                          child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
                       : const Text('Sign In', style: TextStyle(
                           fontSize: 16, fontWeight: FontWeight.w800)),
                 ),
@@ -139,13 +139,13 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text("Don't have an account? ", style: TextStyle(
-                    color: Colors.white.withOpacity(0.4),
+                    color: Colors.black.withOpacity(0.4),
                   )),
                   GestureDetector(
                     onTap: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const RegisterScreen())),
                     child: const Text('Sign Up', style: TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.w700,
+                      color: Colors.black, fontWeight: FontWeight.w700,
                     )),
                   ),
                 ],
@@ -160,21 +160,21 @@ class _LoginScreenState extends State<LoginScreen> {
   InputDecoration _inputDecoration(String hint, IconData icon) {
     return InputDecoration(
       hintText: hint,
-      hintStyle: TextStyle(color: Colors.white.withOpacity(0.3)),
-      prefixIcon: Icon(icon, color: Colors.white38, size: 20),
+      hintStyle: TextStyle(color: Colors.black.withOpacity(0.3)),
+      prefixIcon: Icon(icon, color: Colors.black38, size: 20),
       filled: true,
-      fillColor: const Color(0xFF111111),
+      fillColor: const Color(0xFFF5F5F5),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.white12),
+        borderSide: const BorderSide(color: Colors.black12),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.white12),
+        borderSide: const BorderSide(color: Colors.black12),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: const BorderSide(color: Colors.white38),
+        borderSide: const BorderSide(color: Colors.black38),
       ),
     );
   }
@@ -186,7 +186,7 @@ class _Label extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text(text, style: TextStyle(
-      color: Colors.white.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w600,
+      color: Colors.black.withOpacity(0.5), fontSize: 13, fontWeight: FontWeight.w600,
     ));
   }
 }
