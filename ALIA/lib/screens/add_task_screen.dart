@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import '../constants.dart';
+import '../services/notification_service.dart';
 
 class AddTaskScreen extends StatefulWidget {
   final Map<String, dynamic> user;
@@ -82,11 +83,32 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
       ).timeout(const Duration(seconds: 15));
 
       if (res.statusCode == 200) {
+        final scheduledDateTime = DateTime(
+          _selectedDate!.year,
+          _selectedDate!.month,
+          _selectedDate!.day,
+          _selectedTime!.hour,
+          _selectedTime!.minute,
+        );
+
+        print('Scheduling notification for: $scheduledDateTime');
+        print('Reminder time: ${scheduledDateTime.subtract(const Duration(hours: 2))}');
+        print('Current time: ${DateTime.now()}');
+
+        await NotificationService.scheduleTaskReminder(
+          id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+          taskName: name,
+          scheduledDateTime: scheduledDateTime,
+        );
+
+        print('Notification scheduled!');
+
         _nameController.clear();
         setState(() { _selectedDate = null; _selectedTime = null; _loading = false; });
-        _showSnack('Task added!');
+        _showSnack('Task added! You\'ll be reminded 2 hours before.');
       }
     } catch (e) {
+      print('Error: $e');
       setState(() => _loading = false);
       _showSnack('Failed to add task');
     }

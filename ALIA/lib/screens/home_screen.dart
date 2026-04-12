@@ -74,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text('AILA', style: TextStyle(
+                        const Text('AI LIFE ASSIST', style: TextStyle(
                           fontSize: 32, fontWeight: FontWeight.w900,
                           color: Colors.black, letterSpacing: 2,
                         )),
