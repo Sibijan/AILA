@@ -2,9 +2,12 @@ from fastapi import FastAPI, HTTPException
 import mysql.connector
 import os
 import hashlib
+import requests
+from pydantic import BaseModel
 
 app = FastAPI()
 
+# ───────────────── DATABASE ─────────────────
 def get_db():
     return mysql.connector.connect(
         host=os.getenv("MYSQLHOST"),
@@ -17,6 +20,7 @@ def get_db():
 def init_db():
     db = get_db()
     cursor = db.cursor()
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -25,6 +29,7 @@ def init_db():
             password VARCHAR(255)
         )
     """)
+
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS tasks (
             id INT AUTO_INCREMENT PRIMARY KEY,
@@ -36,6 +41,7 @@ def init_db():
             FOREIGN KEY (user_id) REFERENCES users(id)
         )
     """)
+
     db.commit()
     cursor.close()
     db.close()
@@ -45,13 +51,12 @@ init_db()
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
-
+# ───────────────── HOME ─────────────────
 @app.get("/")
 def home():
     return {"status": "working"}
 
-
-# ── AUTH ──
+# ───────────────── AUTH ─────────────────
 @app.post("/register")
 def register(data: dict):
     db = get_db()
@@ -74,27 +79,36 @@ def register(data: dict):
 def login(data: dict):
     db = get_db()
     cursor = db.cursor(dictionary=True)
+
     cursor.execute(
         "SELECT * FROM users WHERE username=%s AND password=%s",
         (data["username"], hash_password(data["password"]))
     )
+
     user = cursor.fetchone()
     cursor.close()
     db.close()
+
     if not user:
         raise HTTPException(status_code=401, detail="Invalid username or password")
-    return {"id": user["id"], "name": user["name"], "username": user["username"]}
 
+    return {
+        "id": user["id"],
+        "name": user["name"],
+        "username": user["username"]
+    }
 
-# ── TASKS ──
+# ───────────────── TASKS ─────────────────
 @app.post("/tasks")
 def add_task(task: dict):
     db = get_db()
     cursor = db.cursor()
+
     cursor.execute(
         "INSERT INTO tasks (user_id, name, scheduled_date, scheduled_time) VALUES (%s, %s, %s, %s)",
         (task["user_id"], task["name"], task.get("scheduled_date", ""), task.get("scheduled_time", ""))
     )
+
     db.commit()
     cursor.close()
     db.close()
@@ -105,10 +119,12 @@ def add_task(task: dict):
 def get_tasks(user_id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
+
     cursor.execute(
         "SELECT * FROM tasks WHERE user_id=%s ORDER BY scheduled_date ASC, scheduled_time ASC",
         (user_id,)
     )
+
     tasks = cursor.fetchall()
     cursor.close()
     db.close()
@@ -119,8 +135,10 @@ def get_tasks(user_id: int):
 def update_task(task_id: int):
     db = get_db()
     cursor = db.cursor()
+
     cursor.execute("UPDATE tasks SET status='done' WHERE id=%s", (task_id,))
     db.commit()
+
     cursor.close()
     db.close()
     return {"message": "Task marked as done"}
@@ -130,8 +148,10 @@ def update_task(task_id: int):
 def delete_task(task_id: int):
     db = get_db()
     cursor = db.cursor()
+
     cursor.execute("DELETE FROM tasks WHERE id=%s", (task_id,))
     db.commit()
+
     cursor.close()
     db.close()
     return {"message": "Task deleted"}
@@ -141,25 +161,67 @@ def delete_task(task_id: int):
 def get_productivity(user_id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
+
     cursor.execute("SELECT COUNT(*) as total FROM tasks WHERE user_id=%s", (user_id,))
     total = cursor.fetchone()["total"]
+
     cursor.execute("SELECT COUNT(*) as completed FROM tasks WHERE user_id=%s AND status='done'", (user_id,))
     completed = cursor.fetchone()["completed"]
+
     cursor.close()
     db.close()
+
     score = int((completed / total) * 100) if total > 0 else 0
-    return {"total_tasks": total, "completed_tasks": completed, "productivity": score}
+
+    return {
+        "total_tasks": total,
+        "completed_tasks": completed,
+        "productivity": score
+    }
 
 
 @app.get("/plan/{user_id}")
 def plan_day(user_id: int):
     db = get_db()
     cursor = db.cursor(dictionary=True)
+
     cursor.execute(
         "SELECT * FROM tasks WHERE user_id=%s ORDER BY scheduled_date ASC, scheduled_time ASC",
         (user_id,)
     )
+
     tasks = cursor.fetchall()
     cursor.close()
     db.close()
     return tasks
+
+# ───────────────── 🤖 FREE AI CHAT ─────────────────
+class ChatRequest(BaseModel):
+    message: str
+
+
+@app.post("/chat")
+def chat(req: ChatRequest):
+    try:
+        response = requests.post(
+            "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
+            headers={
+                "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
+            },
+            json={"inputs": req.message},
+        )
+
+        data = response.json()
+        print(data)  # 🔥 Debug log
+
+        if isinstance(data, list):
+            reply = data[0].get("generated_text", "No response")
+        elif "error" in data:
+            reply = "AI error: " + data["error"]
+        else:
+            reply = str(data)
+
+        return {"reply": reply}
+
+    except Exception as e:
+        return {"reply": str(e)}
