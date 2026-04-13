@@ -209,18 +209,27 @@ def chat(req: ChatRequest):
                 "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
             },
             json={
-                "inputs": req.message
+                "inputs": f"Answer this: {req.message}",
+                "parameters": {
+                    "max_new_tokens": 100
+                }
             },
+            timeout=15
         )
 
+        # 🔥 handle empty response
         if not response.text:
-            return {"reply": "AI is loading... try again"}
+            return {"reply": "AI is starting... try again"}
 
-        data = response.json()
+        try:
+            data = response.json()
+        except:
+            return {"reply": "Invalid AI response"}
+
         print(data)
 
-        # 🔥 flan-t5 format
-        if isinstance(data, list):
+        # 🔥 correct parsing
+        if isinstance(data, list) and len(data) > 0:
             reply = data[0].get("generated_text", "No response")
         elif "error" in data:
             reply = "AI error: " + data["error"]
