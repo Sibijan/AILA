@@ -204,7 +204,7 @@ class ChatRequest(BaseModel):
 def chat(req: ChatRequest):
     try:
         response = requests.post(
-            "https://api-inference.huggingface.co/models/microsoft/DialoGPT-medium",
+            "https://router.huggingface.co/hf-inference/models/microsoft/DialoGPT-medium",
             headers={
                 "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
             },
@@ -212,7 +212,7 @@ def chat(req: ChatRequest):
         )
 
         data = response.json()
-        print(data)  # 🔥 Debug log
+        print(data)
 
         if isinstance(data, list):
             reply = data[0].get("generated_text", "No response")
