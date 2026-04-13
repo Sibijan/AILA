@@ -204,24 +204,22 @@ class ChatRequest(BaseModel):
 def chat(req: ChatRequest):
     try:
         response = requests.post(
-            "https://router.huggingface.co/hf-inference/models/microsoft/DialoGPT-medium",
+            "https://router.huggingface.co/hf-inference/models/google/flan-t5-base",
             headers={
                 "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
             },
-            json={"inputs": req.message},
+            json={
+                "inputs": req.message
+            },
         )
 
-        # 🔥 check raw response first
         if not response.text:
-            return {"reply": "AI is waking up... try again"}
+            return {"reply": "AI is loading... try again"}
 
-        try:
-            data = response.json()
-        except:
-            return {"reply": "AI returned invalid response"}
-
+        data = response.json()
         print(data)
 
+        # 🔥 flan-t5 format
         if isinstance(data, list):
             reply = data[0].get("generated_text", "No response")
         elif "error" in data:
