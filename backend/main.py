@@ -209,34 +209,33 @@ def chat(req: ChatRequest):
                 "Authorization": f"Bearer {os.getenv('HF_TOKEN')}"
             },
             json={
-                "inputs": f"Answer this: {req.message}",
-                "parameters": {
-                    "max_new_tokens": 100
-                }
+                "inputs": f"Question: {req.message} Answer:",
             },
-            timeout=15
+            timeout=20
         )
 
-        # 🔥 handle empty response
-        if not response.text:
-            return {"reply": "AI is starting... try again"}
+        # 🔥 RAW TEXT CHECK
+        if not response.text.strip():
+            return {"reply": "AI is loading... try again in a moment"}
 
         try:
             data = response.json()
         except:
-            return {"reply": "Invalid AI response"}
+            return {"reply": "AI response not ready yet, try again"}
 
-        print(data)
+        print("HF RAW:", data)
 
-        # 🔥 correct parsing
+        # 🔥 HANDLE RESPONSE CORRECTLY
         if isinstance(data, list) and len(data) > 0:
-            reply = data[0].get("generated_text", "No response")
-        elif "error" in data:
-            reply = "AI error: " + data["error"]
-        else:
-            reply = str(data)
+            reply = data[0].get("generated_text", "").strip()
+            if not reply:
+                return {"reply": "AI is thinking... try again"}
+            return {"reply": reply}
 
-        return {"reply": reply}
+        if isinstance(data, dict) and "error" in data:
+            return {"reply": "AI error: " + data["error"]}
+
+        return {"reply": "AI not responding properly yet"}
 
     except Exception as e:
-        return {"reply": str(e)}
+        return {"reply": f"Server error: {str(e)}"}
