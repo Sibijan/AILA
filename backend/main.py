@@ -211,7 +211,15 @@ def chat(req: ChatRequest):
             json={"inputs": req.message},
         )
 
-        data = response.json()
+        # 🔥 check raw response first
+        if not response.text:
+            return {"reply": "AI is waking up... try again"}
+
+        try:
+            data = response.json()
+        except:
+            return {"reply": "AI returned invalid response"}
+
         print(data)
 
         if isinstance(data, list):
