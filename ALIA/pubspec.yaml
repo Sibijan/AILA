@@ -14,8 +14,9 @@ dependencies:
   percent_indicator: ^4.2.3
   cupertino_icons: ^1.0.6
   shared_preferences: ^2.2.2
-  flutter_local_notifications: ^17.2.2
+  flutter_local_notifications: ^18.0.0
   timezone: ^0.9.4
+  
 
 dev_dependencies:
   flutter_test:

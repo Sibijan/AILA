@@ -1,19 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/tasks_screen.dart';
 import 'screens/add_task_screen.dart';
 import 'screens/plan_screen.dart';
-import 'services/session.dart';
 
-void main() {
+import 'services/session.dart';
+import 'services/notification_service.dart'; // ✅ ADDED
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ✅ INIT NOTIFICATIONS (REQUIRED)
+  await NotificationService.init();
+
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
     statusBarIconBrightness: Brightness.dark,
   ));
+
   runApp(const AILAApp());
 }
 
@@ -65,6 +73,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkSession() async {
     final user = await Session.get();
     if (!mounted) return;
+
     if (user != null) {
       Navigator.pushReplacement(
         context,
@@ -83,10 +92,15 @@ class _SplashScreenState extends State<SplashScreen> {
     return const Scaffold(
       backgroundColor: Colors.white,
       body: Center(
-        child: Text('AILA', style: TextStyle(
-          fontSize: 32, fontWeight: FontWeight.w900,
-          color: Colors.black, letterSpacing: 2,
-        )),
+        child: Text(
+          'AILA',
+          style: TextStyle(
+            fontSize: 32,
+            fontWeight: FontWeight.w900,
+            color: Colors.black,
+            letterSpacing: 2,
+          ),
+        ),
       ),
     );
   }
@@ -127,10 +141,14 @@ class _RootNavigatorState extends State<RootNavigator> {
           currentIndex: _currentIndex,
           onTap: (i) => setState(() => _currentIndex = i),
           items: const [
-            BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Home'),
-            BottomNavigationBarItem(icon: Icon(Icons.checklist_rounded), label: 'Tasks'),
-            BottomNavigationBarItem(icon: Icon(Icons.add_circle_rounded), label: 'Add'),
-            BottomNavigationBarItem(icon: Icon(Icons.calendar_today_rounded), label: 'Plan'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.dashboard_rounded), label: 'Home'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.checklist_rounded), label: 'Tasks'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.add_circle_rounded), label: 'Add'),
+            BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_today_rounded), label: 'Plan'),
           ],
         ),
       ),

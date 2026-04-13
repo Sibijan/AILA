@@ -8,14 +8,18 @@ class NotificationService {
 
   static Future<void> init() async {
     tz.initializeTimeZones();
-    tz.setLocalLocation(tz.UTC);
+    tz.setLocalLocation(tz.local);
 
-    const android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const settings = InitializationSettings(android: android);
+    const androidSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const settings = InitializationSettings(android: androidSettings);
+
     await _plugin.initialize(settings);
 
     await _plugin
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
         ?.requestNotificationsPermission();
   }
 
@@ -24,26 +28,17 @@ class NotificationService {
     required String taskName,
     required DateTime scheduledDateTime,
   }) async {
-    final reminderTime = scheduledDateTime.subtract(const Duration(hours: 2));
-
-    print('Reminder time (local): $reminderTime');
-    print('Current time (local): ${DateTime.now()}');
+    final reminderTime =
+        scheduledDateTime.subtract(const Duration(hours: 2));
 
     if (reminderTime.isBefore(DateTime.now())) {
-      print('Reminder time is in the past, skipping');
       return;
     }
 
-    final tzReminderTime = tz.TZDateTime(
-      tz.UTC,
-      reminderTime.year,
-      reminderTime.month,
-      reminderTime.day,
-      reminderTime.hour,
-      reminderTime.minute,
-    ).subtract(DateTime.now().timeZoneOffset);
-
-    print('TZ reminder time: $tzReminderTime');
+    final tzReminderTime = tz.TZDateTime.from(
+      reminderTime,
+      tz.local,
+    );
 
     await _plugin.zonedSchedule(
       id,
@@ -58,14 +53,13 @@ class NotificationService {
           importance: Importance.max,
           priority: Priority.max,
           playSound: true,
+          icon: '@mipmap/ic_launcher',
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
     );
-
-    print('Notification successfully scheduled!');
   }
 
   static Future<void> cancelAll() async {
